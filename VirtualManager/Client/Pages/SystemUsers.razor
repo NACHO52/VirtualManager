@@ -1,0 +1,27 @@
+﻿@page "/systemUsers"
+@inject ISystemUserService SystemUserService
+
+<h3>SystemUser</h3>
+@foreach (SystemUser item in Users)
+{
+    <div>@item.Username - @item.Email</div>
+}
+
+
+@code {
+    public IList<SystemUser> Users;
+    public string Message { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Users = await SystemUserService.GetAll();
+        }
+        catch (Exception e)
+        {
+            
+            throw;
+        }
+    }
+}

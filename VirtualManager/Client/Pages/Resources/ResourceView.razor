@@ -1,0 +1,90 @@
+﻿@page "/resourceView/{id:int}"
+@page "/resourceView"
+@inject IResourceService ResourceService
+@inject NavigationManager NavigationManager
+
+@if(Resource != null)
+{
+    <EditForm Model="@Resource" OnValidSubmit="Save">
+        <div class="formView">
+            <h5>Resource</h5>
+            <div class="controls">
+                <div class="controls_row">
+                    <MudTextField @bind-Value="Resource.Name" Label="Name" Variant="Variant.Outlined" Class="mediumField control_text"></MudTextField>
+                    <MudSelect Label="MeasureType" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" @bind-Value="@Resource.MeasureType" Class="shortField control_select">
+                        @foreach (ResourceMeasureType item in Enum.GetValues(typeof(ResourceMeasureType)))
+                        {
+                            <MudSelectItem Value="@item">@item</MudSelectItem>
+                        }
+                    </MudSelect>
+                </div>
+                <div class="controls_row">
+                    <MudTextField T="string" Label="Description" Variant="Variant.Outlined" @bind-Value="@Resource.Description" Text="@Resource.Description" Lines="3" Class="longField control_text" />
+                    <MudNumericField @bind-Value="Resource.MeasureValue" Label="Value" Variant="Variant.Outlined" Step=".2M" Class="shortField control_number" />
+                </div>
+                <div class="controls_row">
+                    <MudNumericField @bind-Value="Resource.Price" Label="Price" Variant="Variant.Outlined" Step=".2M" Class="shortField control_number" />
+                </div>
+                <div class="controls_row">
+                    <div class="bottomMenu_container">
+                        <div class="detailsButtom">
+                            <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Cancel" Color="Color.Secondary" Size="Size.Large" OnClick="Cancel">Cancel</MudButton>
+                            <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Save" Color="Color.Info" Size="Size.Large" ButtonType="ButtonType.Submit">Save</MudButton>
+                        </div>
+                        <div class="returnButton">
+                            <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.ArrowBack" Color="Color.Primary" Size="Size.Large" Href="/resourceList">Return</MudButton>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </EditForm>
+}
+else
+{
+    <p>Loading...</p>
+}
+
+
+
+
+
+@code {
+    public Resource Resource;
+    public Resource ResourceUnedited { get; set; }
+    public string Message { get; set; }
+    [Parameter]
+    public int id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            if(id > 0)
+            {
+                Resource = await ResourceService.ResourceGet(id);
+            }
+            else
+            {
+                Resource = new Resource();
+            }
+            ResourceUnedited = new Resource(Resource);
+        }
+        catch (Exception e)
+        {
+            Message = "ERROR: " + e.Message;
+        }
+    }
+
+    protected async Task Save()
+    {
+        await ResourceService.ResourceSave(Resource);
+        ResourceUnedited = new Resource(Resource);
+        //NavigationManager.NavigateTo($"/resourceList");
+    }
+
+    protected void Cancel()
+    {
+        Resource = ResourceUnedited;
+    }
+}

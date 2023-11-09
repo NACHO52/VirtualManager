@@ -1,0 +1,83 @@
+﻿@page "/resourceList"
+@inject IResourceService ResourceService
+@* @inject IDialogService DialogService *@
+@inject NavigationManager NavigationManager
+
+<h3>Resources</h3>
+
+
+
+<MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Create" Color="Color.Primary" Size="Size.Large" Href="/resourceView">New</MudButton>
+<MudTable Items="@Resources" Hover="true" Breakpoint="Breakpoint.Sm" >
+    <HeaderContent>
+        <MudTh>Name</MudTh>
+        <MudTh>Price</MudTh>
+        <MudTh></MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Name">@context.Name</MudTd>
+        <MudTd DataLabel="Price">@context.Price</MudTd>
+        <MudTd DataLabel="">
+            <MudFab OnClick="@(() => Edit(context.Id))" Color="Color.Primary" Icon="@Icons.Material.Filled.Edit" Size="Size.Small" IconSize="Size.Small">View</MudFab>
+        </MudTd>
+        <MudTd DataLabel="">
+            @* <MudFab OnClick="@(() => Delete(context.Id))" Color="Color.Secondary" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" IconSize="Size.Small">Delete</MudFab> *@
+            
+            <MudFab OnClick="@(() => ConfirmDelete(context.Id))" Color="Color.Secondary" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" IconSize="Size.Small">Delete</MudFab>
+        </MudTd>
+    </RowTemplate>
+</MudTable>
+
+
+
+<MudMessageBox @ref="mbox" Title="Warning" CancelText="Cancel">
+    <MessageContent>
+        Are you sure you want to delete this row?
+    </MessageContent>
+    <YesButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.DeleteForever" OnClick="@(() => Delete())">Delete</MudButton>
+    </YesButton>
+</MudMessageBox>
+
+@code {
+    public IList<Resource> Resources;
+    public string Message { get; set; }
+    MudMessageBox mbox { get; set; }
+    // string state = "Message box hasn't been opened yet";
+    public int IdToDelete;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Resources = await ResourceService.ResourceGetAll();
+        }
+        catch (Exception e)
+        {
+            Message = "Error:" + e.Message;
+        }
+    }
+
+    public async Task Edit(int id)
+    {
+        NavigationManager.NavigateTo($"/resourceView/{id}");
+    }
+    public async Task Delete()
+    {
+
+        Resource obj = Resources.Where(r => r.Id == IdToDelete).FirstOrDefault();
+        if(obj != null)
+        {
+            Resources.Remove(obj);
+            await ResourceService.ResourceDelete(obj.Id);
+        }
+    }
+
+    public async Task ConfirmDelete(int id)
+    {
+        IdToDelete = id;
+        bool? result = await mbox.Show();
+        // state = result == null ? "Canceled" : "Deleted";
+        StateHasChanged();
+    }
+}

@@ -1,0 +1,13 @@
+/VirtualManager.DAO/bin/Debug/net7.0/*.dll
+*.dll
+/VirtualManager/Client/obj
+/VirtualManager/Client/bin
+/VirtualManager/Server/bin
+/VirtualManager/Server/obj
+/VirtualManager/Shared/bin
+/VirtualManager/Shared/obj
+/VirtualManager.DAO/bin
+/VirtualManager.DAO/obj
+/.vs/ProjectEvaluation
+/.vs/sd
+/.vs/VirtualManager/FileContentIndex
