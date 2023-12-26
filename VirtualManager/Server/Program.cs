@@ -15,7 +15,7 @@ builder.Services.AddSingleton<IDbConnection>((sp) => new SqlConnection(dbConnect
 
 //My services
 builder.Services.AddScoped<ISystemUserDAO, SystemUserDAO>();
-builder.Services.AddScoped<IResourceDAO, ResourceDAO>();
+builder.Services.AddScoped<IResourceItemDAO, ResourceItemDAO>();
 
 var app = builder.Build();
 

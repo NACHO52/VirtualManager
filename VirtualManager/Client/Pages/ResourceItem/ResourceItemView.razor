@@ -1,0 +1,180 @@
+﻿@page "/resourceItemView/{id:int}"
+@page "/resourceItemView"
+@inject ISnackbar Snackbar
+@inject IResourceItemService ResourceItemService
+@inject NavigationManager NavigationManager
+@using System.ComponentModel.DataAnnotations
+
+
+<h5>ResourceItem</h5>
+
+<div class="menu_container">
+    <div class="button_control">
+        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.ArrowBack" Color="Color.Primary" Size="Size.Large" Href="/resourceItemList">Return</MudButton>
+    </div>
+</div>
+@if (ResourceItem != null)
+{
+
+    <EditForm Model="@ResourceItem" OnValidSubmit="Save">
+        <DataAnnotationsValidator />
+        <div class="formView">
+
+            <div class="form_container">
+                <div class="control_row column_2">
+                    <div class="controlColumn columnLeft">
+                        <div class="form_control">
+                            <MudTextField @bind-Value="ResourceItem.Name" Label="Name" Variant="Variant.Outlined" Class="mediumField control_text" For="@(() => ResourceItem.Name)"></MudTextField>
+                        </div>
+                        <div class="form_control">
+                            <MudNumericField HideSpinButtons="true" @bind-Value="ResourceItem.Price" Label="Price" Variant="Variant.Outlined" Step=".2M" Class="shortField control_number"  Disabled="true"/>
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@OpenPriceWin">Modify</MudButton>
+                        </div>
+                        <div class="form_control">
+                            <MudSelect Label="MeasureType" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" @bind-Value="@ResourceItem.MeasureType" Class="shortField control_select">
+                                @foreach (ResourceItemMeasureType item in Enum.GetValues(typeof(ResourceItemMeasureType)))
+                                {
+                                    <MudSelectItem Value="@item">@item</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </div>
+                    </div>
+                    <div class="controlColumn columnRight">
+                        <div class="form_control">
+                            <MudTextField T="string" Label="Description" Variant="Variant.Outlined" @bind-Value="@ResourceItem.Description" Text="@ResourceItem.Description" Lines="6" Class="longField control_text" />
+                        </div>
+                        <div class="form_control">
+                            <MudNumericField HideSpinButtons="true" @bind-Value="ResourceItem.MeasureValue" Label="Measure Value" Variant="Variant.Outlined" Step=".2M" Class="shortField control_number"/>
+                        </div>
+                    </div>
+                </div>
+
+                @* <MudDataGrid @bind-Value="@ResourceItemPriceHistory" Items="@ResourceItemPriceHistory.OrderByDescending(r => r.Date)"> *@
+                <MudDataGrid @bind-Value="ResourceItem.PriceHistory" Items="@ResourceItem.PriceHistory.OrderByDescending(r => r.Date)">
+                    <Columns>
+                        <PropertyColumn Property="x => x.Price" Title="Price"/>
+                        <PropertyColumn Property="x => x.DateTimeStr" Title="Date" />
+                    </Columns>
+                </MudDataGrid>
+
+                <div class="control_row">
+                    <div class="bottomMenu_container">
+                        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Cancel" Color="Color.Secondary" Size="Size.Large" OnClick="Cancel">Cancel</MudButton>
+                        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Save" Color="Color.Info" Size="Size.Large" ButtonType="ButtonType.Submit">Save</MudButton>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </EditForm>
+
+    <MudPopover Open="@_isOpenPriceWin" Fixed="true" AnchorOrigin="Origin.CenterCenter" TransformOrigin="Origin.CenterCenter" Class="popover">
+        <div class="control_row">
+            <MudNumericField @bind-Value="NewPrice" HideSpinButtons="true" Label="Price" Variant="Variant.Outlined" Step=".2M" Class="shortField control_number" />
+        </div>
+        <div class="control_row menu_row">
+            <MudButton OnClick="@OpenPriceWin" Class="ml-auto mr-n3 mb-1" Color="Color.Error">Close</MudButton>
+            <MudButton Variant="Variant.Filled" Class="ml-auto mr-n3 mb-1" Color="Color.Primary" OnClick="@(() => AddPrice())">Aceptar</MudButton>
+        </div>
+    </MudPopover>
+}
+else
+{
+    <p>Loading...</p>
+}
+
+
+
+
+
+@code {
+    public ResourceItem ResourceItem;
+    public IList<ResourceItemPriceHistory> ResourceItemPriceHistory;
+    public ResourceItem ResourceItemUnedited;
+    public string Message { get; set; }
+    public bool displayAlert;
+    public bool _isOpenPriceWin;
+    public decimal NewPrice;
+    [Parameter]
+    public int id { get; set; }
+
+    public void OpenPriceWin()
+    {
+        _isOpenPriceWin = !_isOpenPriceWin;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            if(id > 0)
+            {
+                ResourceItem = await ResourceItemService.ResourceItemGet(id);
+                NewPrice = ResourceItem.Price;
+                ResourceItemPriceHistory = ResourceItem.PriceHistory;
+            }
+            else
+            {
+                ResourceItem = new ResourceItem();
+                ResourceItemPriceHistory = new List<ResourceItemPriceHistory>();
+                NewPrice = 0;
+            }
+            ResourceItemUnedited = new ResourceItem(ResourceItem);
+            // ResourceItemUnedited = new ResourceItem();
+            // ResourceItemUnedited.Id = ResourceItem.Id;
+            // ResourceItemUnedited.Name = ResourceItem.Name;
+            // ResourceItemUnedited.Description = ResourceItem.Description;
+            // ResourceItemUnedited.MeasureType = ResourceItem.MeasureType;
+            // ResourceItemUnedited.MeasureValue = ResourceItem.MeasureValue;
+            // ResourceItemUnedited.Price = ResourceItem.Price;
+            // ResourceItemUnedited.PriceHistory = new ResourceItem.PriceHistory;
+
+            displayAlert = false;
+        }
+        catch (Exception e)
+        {
+            Message = "ERROR: " + e.Message;
+        }
+    }
+
+    protected async Task Save()
+    {
+        bool success = true;
+        if(ResourceItem.MeasureValue == 0)
+        {
+            Snackbar.Add("Must complete the measure value!", Severity.Error);
+            success = false;
+        }
+        else if(string.IsNullOrEmpty(ResourceItem.Name))
+        {
+            Snackbar.Add("Must complete the Name!", Severity.Error);
+            success = false;
+        }
+
+        if(success)
+        {
+            await ResourceItemService.ResourceItemSave(ResourceItem);
+            ResourceItemUnedited = new ResourceItem(ResourceItem);
+
+            Snackbar.Add("Save success!", Severity.Success);
+        }
+    }
+
+    protected void Cancel()
+    {
+        ResourceItem = ResourceItemUnedited;
+        NewPrice = ResourceItem.Price;
+        ResourceItem.PriceHistory = ResourceItemUnedited.PriceHistory;
+    }
+
+    protected void AddPrice()
+    {
+        ResourceItem.Price = NewPrice;
+        ResourceItemPriceHistory his = new ResourceItemPriceHistory();
+        his.Price = NewPrice;
+        his.Date = DateTime.Now;
+
+        ResourceItem.PriceHistory.Add(his);
+
+        _isOpenPriceWin = false;
+    }
+}

@@ -4,7 +4,7 @@ namespace VirtualManager.Shared
     {
         public Product()
         {
-            Resources = new List<Resource>();
+            Resources = new List<ResourceItem>();
             Taxes = new List<Tax>();
         }
 
@@ -12,7 +12,7 @@ namespace VirtualManager.Shared
         public string Name { get; set; }
         public string Description { get; set; }
         public bool Enable { get; set; }
-        public IList<Resource> Resources { get; set; }
+        public IList<ResourceItem> Resources { get; set; }
         public IList<Tax> Taxes { get; set; }
 
     }

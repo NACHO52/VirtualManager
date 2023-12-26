@@ -7,12 +7,12 @@ using VirtualManager.Shared;
 
 namespace VirtualManager.DAO
 {
-    public interface IResourceDAO
+    public interface IResourceItemDAO
     {
-        Task<IList<Resource>> GetAll();
-        Task<Resource> Get(int id);
-        Task Save(Resource obj);
-        Task Update(Resource obj);
+        Task<IList<ResourceItem>> GetAll();
+        Task<ResourceItem> Get(int id);
+        Task Save(ResourceItem obj);
+        Task Update(ResourceItem obj);
         Task Delete(int obj);
     }
 }
