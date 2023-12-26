@@ -14,5 +14,6 @@ namespace VirtualManager.DAO
         Task Save(ResourceItem obj);
         Task Update(ResourceItem obj);
         Task Delete(int obj);
+        Task<ResourceItem> GetLast();
     }
 }

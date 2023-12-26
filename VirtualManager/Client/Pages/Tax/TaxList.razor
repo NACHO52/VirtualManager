@@ -1,0 +1,87 @@
+﻿@page "/taxList"
+@inject ITaxService TaxService
+@inject NavigationManager NavigationManager
+
+<h3>Tax</h3>
+
+
+
+<MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Create" Color="Color.Primary" Size="Size.Large" Href="/TaxView">New</MudButton>
+
+@if (Taxes != null && Taxes.Count() > 0)
+{
+    <MudTable Items="@Taxes" Hover="true" Breakpoint="Breakpoint.Sm">
+        <HeaderContent>
+            <MudTh>Name</MudTh>
+            <MudTh>Amount</MudTh>
+            <MudTh></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Name">@context.Name</MudTd>
+            <MudTd DataLabel="Amount">@context.Amount</MudTd>
+            @* <MudTd DataLabel="">
+                <MudFab OnClick="@(() => Edit(context.Id))" Color="Color.Primary" Icon="@Icons.Material.Filled.Edit" Size="Size.Small" IconSize="Size.Small">View</MudFab>
+            </MudTd> *@
+            <MudTd DataLabel=" ">
+                @* <MudFab OnClick="@(() => Delete(context.Id))" Color="Color.Secondary" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" IconSize="Size.Small">Delete</MudFab> *@
+
+                <MudFab OnClick="@(() => Edit(context.Id))" Color="Color.Primary" Icon="@Icons.Material.Filled.Edit" Size="Size.Small" IconSize="Size.Small">View</MudFab>
+                <MudFab OnClick="@(() => ConfirmDelete(context.Id))" Color="Color.Secondary" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" IconSize="Size.Small">Delete</MudFab>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+}
+
+
+
+<MudMessageBox @ref="mbox" Title="Warning" CancelText="Cancel">
+    <MessageContent>
+        Are you sure you want to delete this row?
+    </MessageContent>
+    <YesButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.DeleteForever" OnClick="@(() => Delete())">Delete</MudButton>
+    </YesButton>
+</MudMessageBox>
+
+@code {
+    public IList<Tax> Taxes;
+    public string Message { get; set; }
+    MudMessageBox mbox { get; set; }
+    // string state = "Message box hasn't been opened yet";
+    public int IdToDelete;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Taxes = await TaxService.TaxGetAll();
+        }
+        catch (Exception e)
+        {
+            Message = "Error:" + e.Message;
+        }
+    }
+
+    public async Task Edit(int id)
+    {
+        NavigationManager.NavigateTo($"/taxView/{id}");
+    }
+    public async Task Delete()
+    {
+
+        Tax obj = Taxes.Where(r => r.Id == IdToDelete).FirstOrDefault();
+        if(obj != null)
+        {
+            Taxes.Remove(obj);
+            await TaxService.TaxDelete(obj.Id);
+        }
+    }
+
+    public async Task ConfirmDelete(int id)
+    {
+        IdToDelete = id;
+        bool? result = await mbox.Show();
+        // state = result == null ? "Canceled" : "Deleted";
+        StateHasChanged();
+    }
+}

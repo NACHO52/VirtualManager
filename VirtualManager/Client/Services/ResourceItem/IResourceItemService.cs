@@ -6,7 +6,7 @@ namespace VirtualManager.Client.Services
     {
         Task<IList<ResourceItem>> ResourceItemGetAll();
         Task<ResourceItem> ResourceItemGet(int id);
-        Task ResourceItemSave(ResourceItem obj);
+        Task<ResourceItem> ResourceItemSave(ResourceItem obj);
         Task ResourceItemDelete(int id);
     }
 }

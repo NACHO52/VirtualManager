@@ -38,15 +38,15 @@ namespace VirtualManager.DAO
 
             await _dbConnection.ExecuteAsync(sql, new { name = obj.Name, description = obj.Description, price = obj.Price, measureType = obj.MeasureType, measureValue = obj.MeasureValue });
 
-            sql = @"SELECT TOP 1 FROM ResourceItem ORDER BY Id DESC";
-            obj = await _dbConnection.QueryFirstOrDefaultAsync<ResourceItem>(sql);
+            sql = @"SELECT TOP 1 Id FROM ResourceItem ORDER BY Id DESC";
+            int lastId = await _dbConnection.QueryFirstOrDefaultAsync<int>(sql);
 
             foreach (ResourceItemPriceHistory history in obj.PriceHistory)
             {
                 sql = @"INSERT INTO [ResourceItemPriceHistory] (Price, [Date], ResourceItemId)
                             VALUES (@price, @date, @resourceItemId)";
 
-                await _dbConnection.ExecuteAsync(sql, new { price = history.Price, date = history.Date, resourceItemId = obj.Id});
+                await _dbConnection.ExecuteAsync(sql, new { price = history.Price, date = history.Date, resourceItemId = lastId});
             }
         }
         public async Task Update(ResourceItem obj)
@@ -64,18 +64,34 @@ namespace VirtualManager.DAO
                             VALUES (@price, @date, @resourceItemId)";
                     await _dbConnection.ExecuteAsync(sql, new { price = history.Price, date = history.Date, resourceItemId = obj.Id });
                 }
-                else
-                {
-                    sql = @"UPDATE [ResourceItemPriceHistory] SET Price = @price, [Date] = @date WHERE Id = @id";
-                    await _dbConnection.ExecuteAsync(sql, new { price = history.Price, date = history.Date, Id = history.Id });
-                }
+                //else
+                //{
+                //    sql = @"UPDATE [ResourceItemPriceHistory] SET Price = @price, [Date] = @date WHERE Id = @id";
+                //    await _dbConnection.ExecuteAsync(sql, new { price = history.Price, date = history.Date, Id = history.Id });
+                //}
             }
 
         }
         public async Task Delete(int id)
         {
-            string sql = "DELETE [ResourceItem] WHERE Id = @id";
+            string sql = @"DELETE [ResourceItemPriceHistory] WHERE ResourceItemId = @id
+                           DELETE [ResourceItem] WHERE Id = @id";
             var result = await _dbConnection.ExecuteAsync(sql, new { id });
+        }
+
+        public async Task<ResourceItem> GetLast()
+        {
+            string sql = "SELECT TOP 1 Id, [Name], [Description], Price, MeasureType, MeasureValue FROM [ResourceItem] ORDER BY Id DESC";
+
+            ResourceItem obj = await _dbConnection.QueryFirstOrDefaultAsync<ResourceItem>(sql, new { });
+
+            if (obj != null)
+            {
+                sql = "SELECT Id, Price, [Date] FROM [ResourceItemPriceHistory] WHERE ResourceItemId = @id";
+                obj.PriceHistory = (IList<ResourceItemPriceHistory>)await _dbConnection.QueryAsync<ResourceItemPriceHistory>(sql, new { obj.Id });
+            }
+
+            return obj;
         }
     }
 }

@@ -26,16 +26,18 @@ namespace VirtualManager.Client.Services
             return await _httpClient.GetFromJsonAsync<IList<ResourceItem>>($"api/resourceItem");
         }
 
-        public async Task ResourceItemSave(ResourceItem obj)
+        public async Task<ResourceItem> ResourceItemSave(ResourceItem obj)
         {
             if (obj.Id == 0)
             {
                 await _httpClient.PostAsJsonAsync<ResourceItem>($"api/resourceItem", obj);
+                obj = await _httpClient.GetFromJsonAsync<ResourceItem>($"api/resourceItem/GetLast");
             }
             else
             {
                 await _httpClient.PutAsJsonAsync<ResourceItem>($"api/resourceItem", obj);
             }
+            return obj;
         }
     }
 }

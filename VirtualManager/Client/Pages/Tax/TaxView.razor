@@ -1,0 +1,177 @@
+﻿@page "/TaxView/{id:int}"
+@page "/TaxView"
+
+@inject ISnackbar Snackbar
+@inject ITaxService TaxService
+@inject NavigationManager NavigationManager
+@inject IDialogService DialogService
+
+@using System.ComponentModel.DataAnnotations
+
+
+<h5>Tax</h5>
+
+<div class="menu_container">
+    <div class="button_control">
+        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.ArrowBack" Color="Color.Primary" Size="Size.Large" Href="/taxList">Return</MudButton>
+    </div>
+</div>
+@if (Tax != null)
+{
+
+    <EditForm Model="@Tax" OnValidSubmit="Save">
+        <DataAnnotationsValidator />
+        <div class="formView">
+
+            <div class="form_container">
+                <div class="control_row column_2">
+                    <div class="controlColumn columnLeft">
+                        <div class="form_control">
+                            <MudTextField @bind-Value="Tax.Name" Label="Name" Variant="Variant.Outlined" Class="mediumField control_text" For="@(() => Tax.Name)"></MudTextField>
+                        </div>
+                        <div class="form_control">
+                            <MudNumericField HideSpinButtons="true" @bind-Value="Tax.Amount" Label="Price" Variant="Variant.Outlined" Step=".2M" Class="shortField control_number"  Disabled="true"/>
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@OpenDialog">Modify</MudButton>
+                        </div>
+                        <div class="form_control">
+                            <MudSelect Label="Type" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" @bind-Value="@Tax.Type" Class="shortField control_select">
+                                @foreach (TaxType item in Enum.GetValues(typeof(TaxType)))
+                                {
+                                    <MudSelectItem Value="@item">@item</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </div>
+                    </div>
+                    <div class="controlColumn columnRight">
+                        <div class="form_control">
+                            <MudTextField T="string" Label="Description" Variant="Variant.Outlined" @bind-Value="@Tax.Description" Text="@Tax.Description" Lines="6" Class="longField control_text" />
+                        </div>
+                    </div>
+                </div>
+
+                @* <MudDataGrid @bind-Value="@ResourceItemPriceHistory" Items="@ResourceItemPriceHistory.OrderByDescending(r => r.Date)"> *@
+                <MudDataGrid @bind-Value="Tax.AmountHistory" Items="@Tax.AmountHistory.OrderByDescending(r => r.Date)">
+                    <Columns>
+                        <PropertyColumn Property="x => x.Amount" Title="Price"/>
+                        <PropertyColumn Property="x => x.DateTimeStr" Title="Date" />
+                    </Columns>
+                </MudDataGrid>
+
+                <div class="control_row">
+                    <div class="bottomMenu_container">
+                        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Cancel" Color="Color.Secondary" Size="Size.Large" OnClick="Cancel">Cancel</MudButton>
+                        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Save" Color="Color.Info" Size="Size.Large" ButtonType="ButtonType.Submit">Save</MudButton>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </EditForm>
+
+    @* <MudPopover Open="@_isOpenPriceWin" Fixed="true" AnchorOrigin="Origin.CenterCenter" TransformOrigin="Origin.CenterCenter" Class="popover">
+        <div class="control_row">
+            <MudNumericField @bind-Value="NewPrice" HideSpinButtons="true" Label="Price" Variant="Variant.Outlined" Step=".2M" Class="shortField control_number" />
+        </div>
+        <div class="control_row menu_row">
+            <MudButton OnClick="@OpenPriceWin" Class="ml-auto mr-n3 mb-1" Color="Color.Error">Close</MudButton>
+            <MudButton Variant="Variant.Filled" Class="ml-auto mr-n3 mb-1" Color="Color.Primary" OnClick="@(() => AddPrice())">Aceptar</MudButton>
+        </div>
+    </MudPopover> *@
+}
+else
+{
+    <p>Loading...</p>
+}
+
+
+
+
+
+@code {
+    public Tax Tax;
+    public Tax TaxUnedited;
+    public string Message { get; set; }
+    public bool displayAlert;
+    public bool _isOpenPriceWin;
+    public decimal NewPrice;
+    [Parameter]
+    public int id { get; set; }
+
+    public void OpenPriceWin()
+    {
+        _isOpenPriceWin = !_isOpenPriceWin;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            if(id > 0)
+            {
+                Tax = await TaxService.TaxGet(id);
+                NewPrice = Tax.Amount;
+            }
+            else
+            {
+                Tax = new Tax();
+                NewPrice = 0;
+            }
+            TaxUnedited = new Tax(Tax);
+
+            displayAlert = false;
+        }
+        catch (Exception e)
+        {
+            Message = "ERROR: " + e.Message;
+        }
+    }
+
+    protected async Task Save()
+    {
+        bool success = true;
+
+        Tax = await TaxService.TaxSave(Tax);
+        TaxUnedited = new Tax(Tax);
+
+        Snackbar.Add("Save success!", Severity.Success);
+    }
+
+    protected void Cancel()
+    {
+        Tax = TaxUnedited;
+        NewPrice = Tax.Amount;
+        Tax.AmountHistory = TaxUnedited.AmountHistory;
+    }
+
+    // protected void AddPrice()
+    // {
+    //     Tax.Amount = NewPrice;
+    //     TaxAmountHistory his = new TaxAmountHistory();
+    //     his.Amount = NewPrice;
+    //     his.Date = DateTime.Now;
+
+    //     Tax.AmountHistory.Add(his);
+
+    //     _isOpenPriceWin = false;
+    // }
+
+
+    private async void OpenDialog()
+    {
+        var parameters = new DialogParameters<DialogAmount> { { x => x.NewPrice, NewPrice } };
+
+        var dialog = await DialogService.ShowAsync<DialogAmount>("asd", parameters);
+        var result = await dialog.Result;
+        if (result != null && !result.Canceled)
+        {
+            NewPrice = Convert.ToDecimal(result.Data);
+
+            Tax.Amount = NewPrice;
+
+            TaxAmountHistory his = new TaxAmountHistory();
+            his.Amount = NewPrice;
+            his.Date = DateTime.Now;
+            Tax.AmountHistory.Add(his);
+            StateHasChanged();
+        }
+    }
+}

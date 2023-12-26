@@ -1,8 +1,11 @@
 ﻿@page "/resourceItemView/{id:int}"
 @page "/resourceItemView"
+
 @inject ISnackbar Snackbar
 @inject IResourceItemService ResourceItemService
 @inject NavigationManager NavigationManager
+@inject IDialogService DialogService
+
 @using System.ComponentModel.DataAnnotations
 
 
@@ -28,7 +31,7 @@
                         </div>
                         <div class="form_control">
                             <MudNumericField HideSpinButtons="true" @bind-Value="ResourceItem.Price" Label="Price" Variant="Variant.Outlined" Step=".2M" Class="shortField control_number"  Disabled="true"/>
-                            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@OpenPriceWin">Modify</MudButton>
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@OpenDialog">Modify</MudButton>
                         </div>
                         <div class="form_control">
                             <MudSelect Label="MeasureType" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" @bind-Value="@ResourceItem.MeasureType" Class="shortField control_select">
@@ -119,20 +122,32 @@ else
                 NewPrice = 0;
             }
             ResourceItemUnedited = new ResourceItem(ResourceItem);
-            // ResourceItemUnedited = new ResourceItem();
-            // ResourceItemUnedited.Id = ResourceItem.Id;
-            // ResourceItemUnedited.Name = ResourceItem.Name;
-            // ResourceItemUnedited.Description = ResourceItem.Description;
-            // ResourceItemUnedited.MeasureType = ResourceItem.MeasureType;
-            // ResourceItemUnedited.MeasureValue = ResourceItem.MeasureValue;
-            // ResourceItemUnedited.Price = ResourceItem.Price;
-            // ResourceItemUnedited.PriceHistory = new ResourceItem.PriceHistory;
 
             displayAlert = false;
         }
         catch (Exception e)
         {
             Message = "ERROR: " + e.Message;
+        }
+    }
+
+    private async void OpenDialog()
+    {
+        var parameters = new DialogParameters<DialogPrice> { { x => x.NewPrice, NewPrice } };
+
+        var dialog = await DialogService.ShowAsync<DialogPrice>("asd", parameters);
+        var result = await dialog.Result;
+        if(result != null && !result.Canceled)
+        {
+            NewPrice = Convert.ToDecimal(result.Data);
+
+            ResourceItem.Price = NewPrice;
+
+            ResourceItemPriceHistory his = new ResourceItemPriceHistory();
+            his.Price = NewPrice;
+            his.Date = DateTime.Now;
+            ResourceItem.PriceHistory.Add(his);
+            StateHasChanged();
         }
     }
 
@@ -152,7 +167,7 @@ else
 
         if(success)
         {
-            await ResourceItemService.ResourceItemSave(ResourceItem);
+            ResourceItem = await ResourceItemService.ResourceItemSave(ResourceItem);
             ResourceItemUnedited = new ResourceItem(ResourceItem);
 
             Snackbar.Add("Save success!", Severity.Success);
