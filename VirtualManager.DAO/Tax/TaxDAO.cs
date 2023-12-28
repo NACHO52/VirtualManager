@@ -93,5 +93,12 @@ namespace VirtualManager.DAO
 
             return obj;
         }
+
+        public async Task<IList<Tax>> GetExcludedByIds(string ids)
+        {
+            string sql = @"SELECT Id, [Name], [Description], Amount, Type FROM [Tax] WHERE Id NOT IN (" + ids + ")";
+
+            return (IList<Tax>)await _dbConnection.QueryAsync<Tax>(sql, new { });
+        }
     }
 }

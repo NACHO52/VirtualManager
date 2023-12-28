@@ -17,6 +17,7 @@ builder.Services.AddSingleton<IDbConnection>((sp) => new SqlConnection(dbConnect
 builder.Services.AddScoped<ISystemUserDAO, SystemUserDAO>();
 builder.Services.AddScoped<IResourceItemDAO, ResourceItemDAO>();
 builder.Services.AddScoped<ITaxDAO, TaxDAO>();
+builder.Services.AddScoped<IProductDAO, ProductDAO>();
 
 var app = builder.Build();
 

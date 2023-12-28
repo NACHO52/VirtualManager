@@ -29,6 +29,16 @@ namespace VirtualManager.Shared
         public decimal Amount { get; set; }
         public TaxType Type { get; set; }
         public IList<TaxAmountHistory> AmountHistory { get; set; }
+
+        public string AmountStr
+        {
+            get
+            {
+                if (Type == TaxType.Percentage) return Amount.ToString() + "%";
+                else if (Type == TaxType.Constant) return "$" + Amount.ToString("#.##");
+                return Amount.ToString();
+            }
+        }
     }
 
     public enum TaxType

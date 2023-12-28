@@ -52,8 +52,7 @@
                     </div>
                 </div>
 
-                @* <MudDataGrid @bind-Value="@ResourceItemPriceHistory" Items="@ResourceItemPriceHistory.OrderByDescending(r => r.Date)"> *@
-                <MudDataGrid @bind-Value="ResourceItem.PriceHistory" Items="@ResourceItem.PriceHistory.OrderByDescending(r => r.Date)">
+                <MudDataGrid @bind-Value="ResourceItem.PriceHistory" Items="@ResourceItem.PriceHistory.OrderByDescending(r => r.Date)" Virtualize="true" FixedHeader="true">
                     <Columns>
                         <PropertyColumn Property="x => x.Price" Title="Price"/>
                         <PropertyColumn Property="x => x.DateTimeStr" Title="Date" />
@@ -82,7 +81,9 @@
 }
 else
 {
-    <p>Loading...</p>
+    <div class="loader">
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+    </div>
 }
 
 

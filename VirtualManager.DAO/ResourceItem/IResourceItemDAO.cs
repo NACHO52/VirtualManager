@@ -15,5 +15,6 @@ namespace VirtualManager.DAO
         Task Update(ResourceItem obj);
         Task Delete(int obj);
         Task<ResourceItem> GetLast();
+        Task<IList<ResourceItem>> GetExcludedByIds(string ids);
     }
 }

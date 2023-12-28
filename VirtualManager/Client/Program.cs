@@ -4,6 +4,7 @@ using VirtualManager.Client;
 using VirtualManager.Client.Services;
 using MudBlazor.Services;
 using MudBlazor;
+using VirtualManager.Shared;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -15,6 +16,7 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.
 builder.Services.AddScoped<ISystemUserService, SystemUserService>();
 builder.Services.AddScoped<IResourceItemService, ResourceItemService>();
 builder.Services.AddScoped<ITaxService, TaxService>();
+builder.Services.AddScoped<IProductService, ProductService>();
 
 builder.Services.AddMudServices();
 

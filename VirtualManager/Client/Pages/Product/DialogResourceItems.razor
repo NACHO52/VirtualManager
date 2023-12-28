@@ -1,0 +1,44 @@
+﻿
+
+<MudDialog>
+    <TitleContent>
+    </TitleContent>
+    <DialogContent>
+
+        <MudTable Items="@ResourceItems" Hover="true" Breakpoint="Breakpoint.Sm">
+            <HeaderContent>
+                <MudTh>Name</MudTh>
+                <MudTh>Price</MudTh>
+                <MudTh></MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Name">@context.Name</MudTd>
+                <MudTd DataLabel="Price">@context.Price</MudTd>
+                <MudTd DataLabel=" ">
+                    <MudFab OnClick="@(() => Add(context.Id))" Color="Color.Primary" Icon="@Icons.Material.Filled.Edit" Size="Size.Small" IconSize="Size.Small">View</MudFab>
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+
+    </DialogContent>
+    @* <DialogActions>
+        <MudButton Color="Color.Error" OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="AddPrice">Accept</MudButton>
+    </DialogActions> *@
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public IList<ResourceItem> ResourceItems { get; set; }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private void Add(int resourceId)
+    {
+        MudDialog.Close(DialogResult.Ok(resourceId));
+    }
+}

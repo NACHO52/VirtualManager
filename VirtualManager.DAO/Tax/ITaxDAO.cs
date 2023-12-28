@@ -15,5 +15,6 @@ namespace VirtualManager.DAO
         Task Update(Tax obj);
         Task Delete(int obj);
         Task<Tax> GetLast();
+        Task<IList<Tax>> GetExcludedByIds(string ids);
     }
 }

@@ -39,5 +39,10 @@ namespace VirtualManager.Client.Services
             }
             return obj;
         }
+        public async Task<IList<Tax>> TaxGetExcludedByIds(IList<int> ids)
+        {
+            string idsStr = string.Join(",", ids);
+            return await _httpClient.GetFromJsonAsync<IList<Tax>>($"api/tax/excluded/{idsStr}");
+        }
     }
 }

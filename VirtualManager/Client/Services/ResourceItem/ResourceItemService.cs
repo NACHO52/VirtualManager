@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Json;
+﻿using System.Linq;
+using System.Net.Http.Json;
 using VirtualManager.Shared;
 
 namespace VirtualManager.Client.Services
@@ -24,6 +25,12 @@ namespace VirtualManager.Client.Services
         public async Task<IList<ResourceItem>> ResourceItemGetAll()
         {
             return await _httpClient.GetFromJsonAsync<IList<ResourceItem>>($"api/resourceItem");
+        }
+
+        public async Task<IList<ResourceItem>> ResourceItemGetExcludedByIds(IList<int> ids)
+        {
+            string idsStr = string.Join(",", ids);
+            return await _httpClient.GetFromJsonAsync<IList<ResourceItem>>($"api/resourceItem/excluded/{idsStr}");
         }
 
         public async Task<ResourceItem> ResourceItemSave(ResourceItem obj)

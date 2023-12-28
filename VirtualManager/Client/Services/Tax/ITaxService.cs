@@ -8,5 +8,6 @@ namespace VirtualManager.Client.Services
         Task<Tax> TaxGet(int id);
         Task<Tax> TaxSave(Tax obj);
         Task TaxDelete(int id);
+        Task<IList<Tax>> TaxGetExcludedByIds(IList<int> ids);
     }
 }

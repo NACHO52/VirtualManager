@@ -6,52 +6,47 @@ namespace VirtualManager.Server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ResourceItemController : Controller
+    public class ProductController : Controller
     {
-        private readonly IResourceItemDAO _dao;
+        private readonly IProductDAO _dao;
 
-        public ResourceItemController(IResourceItemDAO dao)
+        public ProductController(IProductDAO dao)
         {
             _dao = dao;
         }
 
         [HttpGet]
-        public async Task<IList<ResourceItem>> ResourceItemGetAll()
+        public async Task<IList<Product>> ProductGetAll()
         {
             return await _dao.GetAll();
         }
 
         [HttpGet]
         [Route("GetLast")]
-        public async Task<ResourceItem> ResourceItemGetLast()
+        public async Task<Product> ProductGetLast()
         {
             return await _dao.GetLast();
         }
 
         [HttpGet("{id}")]
-        public async Task<ResourceItem> ResourceItemGet(int id)
+        public async Task<Product> ProductGet(int id)
         {
             return await _dao.Get(id);
         }
         [HttpPost]
-        public async Task ResourceItemSave(ResourceItem obj)
+        public async Task ProductSave(Product obj)
         {
             await _dao.Save(obj);
         }
         [HttpPut]
-        public async Task ResourceItemUpdate(ResourceItem obj)
+        public async Task ProductUpdate(Product obj)
         {
             await _dao.Update(obj);
         }
         [HttpDelete("{id}")]
-        public async Task ResourceItemDelete(int id)
+        public async Task ProductDelete(int id)
         {
             await _dao.Delete(id);
-        }
-        [HttpGet("excluded/{ids}")]
-        public async Task<IList<ResourceItem>> GetExcludedByIds(string ids)
-        {
-            return await _dao.GetExcludedByIds(ids);
         }
     }
 

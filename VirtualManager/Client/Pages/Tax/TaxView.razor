@@ -30,7 +30,7 @@
                             <MudTextField @bind-Value="Tax.Name" Label="Name" Variant="Variant.Outlined" Class="mediumField control_text" For="@(() => Tax.Name)"></MudTextField>
                         </div>
                         <div class="form_control">
-                            <MudNumericField HideSpinButtons="true" @bind-Value="Tax.Amount" Label="Price" Variant="Variant.Outlined" Step=".2M" Class="shortField control_number"  Disabled="true"/>
+                            <MudNumericField HideSpinButtons="true" @bind-Value="Tax.Amount" Label="Amount" Variant="Variant.Outlined" Step=".2M" Class="shortField control_number"  Disabled="true"/>
                             <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@OpenDialog">Modify</MudButton>
                         </div>
                         <div class="form_control">
@@ -52,7 +52,7 @@
                 @* <MudDataGrid @bind-Value="@ResourceItemPriceHistory" Items="@ResourceItemPriceHistory.OrderByDescending(r => r.Date)"> *@
                 <MudDataGrid @bind-Value="Tax.AmountHistory" Items="@Tax.AmountHistory.OrderByDescending(r => r.Date)">
                     <Columns>
-                        <PropertyColumn Property="x => x.Amount" Title="Price"/>
+                        <PropertyColumn Property="x => x.Amount" Title="Amount"/>
                         <PropertyColumn Property="x => x.DateTimeStr" Title="Date" />
                     </Columns>
                 </MudDataGrid>
@@ -79,7 +79,9 @@
 }
 else
 {
-    <p>Loading...</p>
+    <div class="loader">
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+    </div>
 }
 
 

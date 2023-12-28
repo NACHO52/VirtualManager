@@ -26,11 +26,17 @@
             <MudTd DataLabel=" ">
                 @* <MudFab OnClick="@(() => Delete(context.Id))" Color="Color.Secondary" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" IconSize="Size.Small">Delete</MudFab> *@
 
-                <MudFab OnClick="@(() => Edit(context.Id))" Color="Color.Primary" Icon="@Icons.Material.Filled.Edit" Size="Size.Small" IconSize="Size.Small">View</MudFab>
-                <MudFab OnClick="@(() => ConfirmDelete(context.Id))" Color="Color.Secondary" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" IconSize="Size.Small">Delete</MudFab>
+                <MudFab OnClick="@(() => Edit(context.Id))" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Edit" Size="Size.Small" IconSize="Size.Small">View</MudFab>
+                <MudFab OnClick="@(() => ConfirmDelete(context.Id))" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Delete" Size="Size.Small" IconSize="Size.Small">Delete</MudFab>
             </MudTd>
         </RowTemplate>
     </MudTable>
+}
+else
+{
+    <div class="loader">
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+    </div>
 }
 
 

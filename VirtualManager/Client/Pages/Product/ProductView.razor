@@ -1,0 +1,299 @@
+﻿@page "/productView/{id:int}"
+@page "/productView"
+
+@inject ISnackbar Snackbar
+@inject IProductService ProductService
+@inject IResourceItemService ResourceItemService
+@inject ITaxService TaxService
+@inject NavigationManager NavigationManager
+@inject IDialogService DialogService
+
+@using System.ComponentModel.DataAnnotations
+
+
+<h5>Product</h5>
+
+<div class="menu_container">
+    <div class="button_control">
+        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.ArrowBack" Color="Color.Primary" Size="Size.Large" Href="/productList">Return</MudButton>
+    </div>
+</div>
+@if (Product != null)
+{
+
+    <EditForm Model="@Product" OnValidSubmit="Save">
+        <DataAnnotationsValidator />
+        <div class="formView">
+
+            <div class="form_container">
+                <div class="control_row column_2">
+                    <div class="controlColumn columnLeft">
+                        <div class="form_control">
+                            <MudTextField @bind-Value="Product.Name" Label="Name" Variant="Variant.Outlined" Class="mediumField control_text" For="@(() => Product.Name)"></MudTextField>
+                        </div>
+                        @* <div class="form_control">
+                            <MudNumericField HideSpinButtons="true" @bind-Value="ResourceItem.Price" Label="Price" Variant="Variant.Outlined" Step=".2M" Class="shortField control_number"  Disabled="true"/>
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@OpenDialog">Modify</MudButton>
+                        </div> *@
+                    </div>
+                    <div class="controlColumn columnRight">
+                        <div class="form_control">
+                            <MudTextField T="string" Label="Description" Variant="Variant.Outlined" @bind-Value="@Product.Description" Text="@Product.Description" Lines="6" Class="longField control_text" />
+                        </div>
+@*                         <div class="form_control">
+                            <MudNumericField HideSpinButtons="true" @bind-Value="ResourceItem.MeasureValue" Label="Measure Value" Variant="Variant.Outlined" Step=".2M" Class="shortField control_number"/>
+                        </div> *@
+                    </div>
+                </div>
+
+                <div class="control_row">
+                    <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6" Border="true" Class="mudTab">
+                        <MudTabPanel Text="Resources">
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@OpenDialogResource">Add</MudButton>
+
+                            <MudDataGrid @bind-Value="Product.Resources" Items="@Product.Resources">
+                                <Columns>
+                                    <PropertyColumn Property="x => x.ResourceItem.Name" Title="Name" />
+                                    <PropertyColumn Property="x => x.ResourceItem.Price" Title="Product's Price" />
+                                    <PropertyColumn Property="x => x.Quantity" Title="Quantity" />
+                                    <PropertyColumn Property="@(x => x.Price.ToString("0.00"))" Title="FullPrice" />
+
+                                    <TemplateColumn CellClass="d-flex justify-end">
+                                        <CellTemplate Context="contextResource">
+                                            <MudStack Row>
+                                                 <MudChip Variant="@Variant.Outlined" Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" OnClick="@(() => EditResourceItem(contextResource.Item.ResourceItemId))">Edit</MudChip>
+                                                 <MudChip Variant="@Variant.Outlined" Icon="@Icons.Material.Filled.Delete" Color="Color.Secondary" OnClick="@(() => ConfirmResourceItemDelete(contextResource.Item.ResourceItemId))">Delete</MudChip>
+                                            </MudStack>
+                                        </CellTemplate>
+                                    </TemplateColumn>
+                                </Columns>
+                            </MudDataGrid>
+
+                        </MudTabPanel>
+                        <MudTabPanel Text="Taxes">
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@OpenDialogTax">Add</MudButton>
+
+                            <MudDataGrid @bind-Value="Product.Taxes" Items="@Product.Taxes">
+                                <Columns>
+                                    <PropertyColumn Property="x => x.Tax.Name" Title="Name" />
+                                    <PropertyColumn Property="x => x.Tax.AmountStr" Title="Amount" />
+
+                                     <TemplateColumn CellClass="d-flex justify-end">
+                                         <CellTemplate Context="contextResource">
+                                             <MudStack Row>
+                                             <MudChip Variant="@Variant.Outlined" Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" OnClick="@(() => EditTax(contextResource.Item.TaxId))">Edit</MudChip>
+                                             <MudChip Variant="@Variant.Outlined" Icon="@Icons.Material.Filled.Delete" Color="Color.Secondary" OnClick="@(() => ConfirmTaxDelete(contextResource.Item.TaxId))">Delete</MudChip>
+                                             </MudStack>
+                                         </CellTemplate>
+                                     </TemplateColumn>
+                                </Columns>
+                            </MudDataGrid>
+
+                        </MudTabPanel>
+                    </MudTabs>
+                </div>
+
+                <div class="control_row">
+                    <div class="bottomMenu_container">
+                        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Cancel" Color="Color.Secondary" Size="Size.Large" OnClick="Cancel">Cancel</MudButton>
+                        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Save" Color="Color.Info" Size="Size.Large" ButtonType="ButtonType.Submit">Save</MudButton>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </EditForm>
+}
+else
+{
+    <div class="loader">
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+    </div>
+}
+
+
+<MudMessageBox @ref="mboxResourceItem" Title="Warning" CancelText="Cancel">
+    <MessageContent>
+        Are you sure you want to delete this resource item?
+    </MessageContent>
+    <YesButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.DeleteForever" OnClick="@(() => DeleteResourceItem())">Delete</MudButton>
+    </YesButton>
+</MudMessageBox>
+
+
+<MudMessageBox @ref="mboxTax" Title="Warning" CancelText="Cancel">
+    <MessageContent>
+        Are you sure you want to delete this tax?
+    </MessageContent>
+    <YesButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.DeleteForever" OnClick="@(() => DeleteTax())">Delete</MudButton>
+    </YesButton>
+</MudMessageBox>
+
+
+
+@code {
+    public Product Product;
+    public Product ProductUnedited;
+    public string Message { get; set; }
+    public bool displayAlert;
+    public bool _isOpenPriceWin;
+    // public decimal NewPrice;
+    [Parameter]
+    public int id { get; set; }
+    MudMessageBox mboxResourceItem { get; set; }
+    MudMessageBox mboxTax { get; set; }
+    public int IdToDelete;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            if(id > 0)
+            {
+                Product = await ProductService.ProductGet(id);
+                // NewPrice = Product.Price;;
+            }
+            else
+            {
+                Product = new Product();
+                // NewPrice = 0;
+            }
+            ProductUnedited = new Product(Product);
+
+            displayAlert = false;
+        }
+        catch (Exception e)
+        {
+            Message = "ERROR: " + e.Message;
+        }
+    }
+
+
+    protected async Task Save()
+    {
+        bool success = true;
+        if(string.IsNullOrEmpty(Product.Name))
+        {
+            Snackbar.Add("Must complete the Name!", Severity.Error);
+            success = false;
+        }
+
+        if(success)
+        {
+            Product = await ProductService.ProductSave(Product);
+            ProductUnedited = new Product(Product);
+
+            Snackbar.Add("Save success!", Severity.Success);
+        }
+    }
+
+    protected void Cancel()
+    {
+        Product = ProductUnedited;
+        // NewPrice = Product.Price;
+        // Product.PriceHistory = ProductUnedited.PriceHistory;
+    }
+
+    private async void OpenDialogResource()
+    {
+        IList<int> ids = Product.Resources.Select(o => o.ResourceItemId).ToList();
+        IList<ResourceItem> resources;
+        if (ids.Count() > 0)
+        {
+            resources = await ResourceItemService.ResourceItemGetExcludedByIds(ids);
+        }
+        else
+        {
+            resources = await ResourceItemService.ResourceItemGetAll();
+        }
+        var parameters = new DialogParameters<DialogResourceItems> { { x => x.ResourceItems, resources } };
+
+        var dialog = await DialogService.ShowAsync<DialogResourceItems>("asd", parameters);
+        var result = await dialog.Result;
+        if (result != null && !result.Canceled)
+        {
+            int resourceId = Convert.ToInt32(result.Data);
+
+            ProductResourceItem res = new ProductResourceItem();
+            res.ResourceItemId = resourceId;
+            res.Quantity = 1;
+            res.ResourceItem = await ResourceItemService.ResourceItemGet(resourceId);
+
+            Product.Resources.Add(res);
+            StateHasChanged();
+        }
+    }
+
+    private async void OpenDialogTax()
+    {
+        IList<int> ids = Product.Taxes.Select(o => o.TaxId).ToList();
+        IList<Tax> taxes;
+        if(ids.Count() > 0)
+        {
+            taxes = await TaxService.TaxGetExcludedByIds(ids);
+        }
+        else
+        {
+            taxes = await TaxService.TaxGetAll();
+        }
+        var parameters = new DialogParameters<DialogTaxes> { { x => x.Taxes, taxes } };
+
+        var dialog = await DialogService.ShowAsync<DialogTaxes>("asd", parameters);
+        var result = await dialog.Result;
+        if (result != null && !result.Canceled)
+        {
+            int taxId = Convert.ToInt32(result.Data);
+
+            ProductTax tax = new ProductTax();
+            tax.TaxId = taxId;
+            tax.Quantity = 1;
+            tax.Tax = await TaxService.TaxGet(taxId);
+
+            Product.Taxes.Add(tax);
+            StateHasChanged();
+        }
+    }
+
+    public async Task EditResourceItem(int id)
+    {
+        
+    }
+
+    public async Task EditTax(int id)
+    {
+
+    }
+
+
+    public async Task ConfirmTaxDelete(int id)
+    {
+        IdToDelete = id;
+        await mboxTax.Show();
+        StateHasChanged();
+    }
+    public async Task DeleteTax()
+    {
+        ProductTax obj = Product.Taxes.Where(r => r.TaxId == IdToDelete).FirstOrDefault();
+        if (obj != null)
+        {
+            Product.Taxes.Remove(obj);
+        }
+    }
+
+    public async Task ConfirmResourceItemDelete(int id)
+    {
+        IdToDelete = id;
+        await mboxResourceItem.Show();
+        StateHasChanged();
+    }
+    public async Task DeleteResourceItem()
+    {
+        ProductResourceItem obj = Product.Resources.Where(r => r.ResourceItemId == IdToDelete).FirstOrDefault();
+        if (obj != null)
+        {
+            Product.Resources.Remove(obj);
+        }
+    }
+}

@@ -48,6 +48,11 @@ namespace VirtualManager.Server.Controllers
         {
             await _dao.Delete(id);
         }
+        [HttpGet("excluded/{ids}")]
+        public async Task<IList<Tax>> GetExcludedByIds(string ids)
+        {
+            return await _dao.GetExcludedByIds(ids);
+        }
     }
 
 }

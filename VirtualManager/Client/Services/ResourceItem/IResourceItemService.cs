@@ -8,5 +8,6 @@ namespace VirtualManager.Client.Services
         Task<ResourceItem> ResourceItemGet(int id);
         Task<ResourceItem> ResourceItemSave(ResourceItem obj);
         Task ResourceItemDelete(int id);
+        Task<IList<ResourceItem>> ResourceItemGetExcludedByIds(IList<int> ids);
     }
 }
